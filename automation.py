@@ -3,7 +3,6 @@ import time
 import webbrowser
 import pyautogui
 
-# Direct Contact Directory (Phone numbers mapped to names)
 CONTACTS = {
     "noor fatimah": "923280759925",
     "noor fatima": "923280759925",
@@ -12,9 +11,7 @@ CONTACTS = {
 }
 
 def open_app_or_site(target_name):
-    """Opens any Windows Application or Website immediately"""
     target = target_name.lower().strip()
-    
     sites = {
         "twitter": "https://x.com",
         "x": "https://x.com",
@@ -27,8 +24,7 @@ def open_app_or_site(target_name):
         "linkedin": "https://www.linkedin.com",
         "github": "https://github.com",
         "chatgpt": "https://chatgpt.com",
-        "gmail": "https://mail.google.com",
-        "email": "https://mail.google.com"
+        "gmail": "https://mail.google.com"
     }
     
     for site_key, url in sites.items():
@@ -63,37 +59,30 @@ def open_app_or_site(target_name):
         return f"Opening {target_name} on Windows."
 
 def whatsapp_action(contact_name, action_type="call", message_text=""):
-    """
-    Direct WhatsApp Protocol Launcher:
-    1. Opens WhatsApp directly into contact chat window via URI.
-    2. Triggers Voice Call shortcut.
-    """
     clean_name = contact_name.lower().strip()
-    print(f"💬 WhatsApp {action_type} for: {clean_name}")
-    
     phone = CONTACTS.get(clean_name)
     if not phone and clean_name.replace("+", "").isdigit():
         phone = clean_name.replace("+", "")
         
     if phone:
-        # Direct URI launch: Opens WhatsApp directly to contact's chat
         webbrowser.open(f"whatsapp://send?phone={phone}")
-        time.sleep(2.5)
+        time.sleep(3.0)  # Wait for chat window
         
         if action_type == "call":
             pyautogui.press('esc')
             time.sleep(0.5)
+            # Direct Voice Call Hotkeys
             pyautogui.hotkey('ctrl', 'shift', 'c')
             time.sleep(0.5)
             pyautogui.hotkey('alt', 'shift', 'c')
-            return f"Initiating WhatsApp call to {contact_name} ({phone})."
+            return f"Initiating direct WhatsApp call to {contact_name} ({phone})."
         elif action_type == "message" and message_text:
             pyautogui.write(message_text, interval=0.06)
             time.sleep(0.5)
             pyautogui.press('enter')
             return f"Message sent to {contact_name}."
             
-    # UI Search Fallback
+    # Fallback
     os.system("start whatsapp:")
     time.sleep(2.0)
     pyautogui.hotkey('ctrl', '1')
@@ -104,10 +93,8 @@ def whatsapp_action(contact_name, action_type="call", message_text=""):
     time.sleep(0.2)
     pyautogui.press('backspace')
     time.sleep(0.3)
-    
     pyautogui.write(contact_name, interval=0.1)
     time.sleep(2.0)
-    
     pyautogui.press('enter')
     time.sleep(0.5)
     pyautogui.press('enter')
@@ -117,42 +104,8 @@ def whatsapp_action(contact_name, action_type="call", message_text=""):
         pyautogui.press('esc')
         time.sleep(0.5)
         pyautogui.hotkey('ctrl', 'shift', 'c')
-        time.sleep(0.5)
-        pyautogui.hotkey('alt', 'shift', 'c')
         return f"Calling {contact_name} on WhatsApp."
-    elif action_type == "message":
-        if message_text:
-            pyautogui.write(message_text, interval=0.06)
-            time.sleep(0.5)
-            pyautogui.press('enter')
-            return f"Message sent to {contact_name}: {message_text}"
-        return f"Chat opened with {contact_name}."
-
-def teams_control(action):
-    act = action.lower()
-    os.system("start msteams:")
-    time.sleep(2.0)
-    if "mute" in act or "mic" in act:
-        pyautogui.hotkey('ctrl', 'shift', 'm')
-        return "Toggled mic in Microsoft Teams."
-    elif "video" in act or "camera" in act:
-        pyautogui.hotkey('ctrl', 'shift', 'o')
-        return "Toggled camera in Microsoft Teams."
-    return "Opened Microsoft Teams."
-
-def compose_gmail(recipient="", subject="", body=""):
-    webbrowser.open("https://mail.google.com/mail/u/0/#inbox?compose=new")
-    time.sleep(4.0)
-    if recipient:
-        pyautogui.write(recipient, interval=0.05)
-        pyautogui.press('enter')
-        pyautogui.press('tab')
-    if subject:
-        pyautogui.write(subject, interval=0.05)
-        pyautogui.press('tab')
-    if body:
-        pyautogui.write(body, interval=0.05)
-    return "Gmail compose window opened."
+    return f"Chat opened with {contact_name}."
 
 def search_web(query):
     webbrowser.open(f"https://www.google.com/search?q={query}")
@@ -178,11 +131,3 @@ def system_control(action):
     elif "screenshot" in act or "photo" in act:
         pyautogui.screenshot("mhzaly_screenshot.png")
         return "Screenshot taken and saved."
-
-def post_tweet(tweet_text):
-    webbrowser.open("https://x.com/intent/post")
-    time.sleep(4.5)
-    pyautogui.write(tweet_text, interval=0.08)
-    time.sleep(1)
-    pyautogui.hotkey('ctrl', 'enter')
-    return f"Tweet posted: {tweet_text}"
