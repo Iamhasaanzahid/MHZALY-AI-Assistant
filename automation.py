@@ -3,13 +3,6 @@ import time
 import webbrowser
 import pyautogui
 
-CONTACTS = {
-    "noor fatimah": "923280759925",
-    "noor fatima": "923280759925",
-    "noor": "923280759925",
-    "mhzaly": "923280759925"
-}
-
 def open_app_or_site(target_name):
     target = target_name.lower().strip()
     sites = {
@@ -59,30 +52,6 @@ def open_app_or_site(target_name):
         return f"Opening {target_name} on Windows."
 
 def whatsapp_action(contact_name, action_type="call", message_text=""):
-    clean_name = contact_name.lower().strip()
-    phone = CONTACTS.get(clean_name)
-    if not phone and clean_name.replace("+", "").isdigit():
-        phone = clean_name.replace("+", "")
-        
-    if phone:
-        webbrowser.open(f"whatsapp://send?phone={phone}")
-        time.sleep(3.0)  # Wait for chat window
-        
-        if action_type == "call":
-            pyautogui.press('esc')
-            time.sleep(0.5)
-            # Direct Voice Call Hotkeys
-            pyautogui.hotkey('ctrl', 'shift', 'c')
-            time.sleep(0.5)
-            pyautogui.hotkey('alt', 'shift', 'c')
-            return f"Initiating direct WhatsApp call to {contact_name} ({phone})."
-        elif action_type == "message" and message_text:
-            pyautogui.write(message_text, interval=0.06)
-            time.sleep(0.5)
-            pyautogui.press('enter')
-            return f"Message sent to {contact_name}."
-            
-    # Fallback
     os.system("start whatsapp:")
     time.sleep(2.0)
     pyautogui.hotkey('ctrl', '1')
@@ -103,8 +72,17 @@ def whatsapp_action(contact_name, action_type="call", message_text=""):
     if action_type == "call":
         pyautogui.press('esc')
         time.sleep(0.5)
-        pyautogui.hotkey('ctrl', 'shift', 'c')
+        for _ in range(5):
+            pyautogui.press('tab')
+            time.sleep(0.2)
+        pyautogui.press('enter')
         return f"Calling {contact_name} on WhatsApp."
+    elif action_type == "message" and message_text:
+        pyautogui.write(message_text, interval=0.06)
+        time.sleep(0.5)
+        pyautogui.press('enter')
+        return f"Message sent to {contact_name}."
+        
     return f"Chat opened with {contact_name}."
 
 def search_web(query):
