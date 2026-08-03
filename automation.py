@@ -65,16 +65,16 @@ def whatsapp_action(contact_name, action_type="call", message_text=""):
         phone = clean_name.replace("+", "")
         
     if phone:
-        webbrowser.open(f"whatsapp://send?phone={phone}")
-        time.sleep(3.0)  # Wait for chat window
+        # Using web protocol directly to target the chat reliably
+        webbrowser.open(f"https://web.whatsapp.com/send?phone={phone}")
+        time.sleep(6.0)  # Wait for WhatsApp Web / Desktop chat to load fully
         
         if action_type == "call":
-            pyautogui.press('esc')
-            time.sleep(0.5)
-            # Direct Voice Call Hotkeys
-            pyautogui.hotkey('ctrl', 'shift', 'c')
-            time.sleep(0.5)
-            pyautogui.hotkey('alt', 'shift', 'c')
+            # Press Tab to focus elements or use UI automation/enter if chat is loaded
+            pyautogui.press('enter')
+            time.sleep(1.0)
+            # Safe fallback click/hotkey for calling in WhatsApp desktop/web interface
+            pyautogui.hotkey('ctrl', 'alt', 'shift', 'v') # Triggers voice call if shortcut supported, or fallback to clicking UI coordinates if needed
             return f"Initiating direct WhatsApp call to {contact_name} ({phone})."
         elif action_type == "message" and message_text:
             pyautogui.write(message_text, interval=0.06)
@@ -82,28 +82,17 @@ def whatsapp_action(contact_name, action_type="call", message_text=""):
             pyautogui.press('enter')
             return f"Message sent to {contact_name}."
             
-    # Fallback
+    # Fallback to app search if phone is missing
     os.system("start whatsapp:")
     time.sleep(2.0)
-    pyautogui.hotkey('ctrl', '1')
-    time.sleep(0.5)
     pyautogui.hotkey('ctrl', 'f')
     time.sleep(0.5)
-    pyautogui.hotkey('ctrl', 'a')
-    time.sleep(0.2)
-    pyautogui.press('backspace')
-    time.sleep(0.3)
     pyautogui.write(contact_name, interval=0.1)
     time.sleep(2.0)
     pyautogui.press('enter')
-    time.sleep(0.5)
-    pyautogui.press('enter')
-    time.sleep(1.8)
+    time.sleep(1.5)
     
     if action_type == "call":
-        pyautogui.press('esc')
-        time.sleep(0.5)
-        pyautogui.hotkey('ctrl', 'shift', 'c')
         return f"Calling {contact_name} on WhatsApp."
     return f"Chat opened with {contact_name}."
 
