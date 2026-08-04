@@ -161,11 +161,11 @@ class EnterpriseAutomationEngine:
             except Exception as e:
                 self.log_event("ERROR", f"Automation error during WhatsApp call routing: {str(e)}")
 
-        def execute_navigation_subsystem(self, target_query):
-            query_sanitized = target_query.lower()
+    def execute_navigation_subsystem(self, target_query):
+        query_sanitized = target_query.lower()
         matched_platform_key = None
         for registry_key in self.global_platform_registry:
-        if registry_key in query_sanitized:
+            if registry_key in query_sanitized:
                 matched_platform_key = registry_key
                 break
         if matched_platform_key:
