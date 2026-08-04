@@ -1,4 +1,4 @@
-pImport webbrowser
+Import webbrowser
 import os
 import subprocess
 import json
