@@ -1,7 +1,7 @@
 import asyncio
 import os
 import pygame
-import speech_recognition speech_recognition as sr
+import speech_recognition as sr
 from edge_tts import Communicate
 
 LANGUAGE_VOICES = {
