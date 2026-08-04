@@ -1,4 +1,4 @@
-import webbrowser
+Import webbrowser
 import os
 import subprocess
 import json
@@ -30,7 +30,7 @@ class EnterpriseAutomationEngine:
             "reddit": {"category": "social", "type": "website", "url": "https://www.reddit.com/", "secure": True},
             "tiktok": {"category": "social", "type": "website", "url": "https://www.tiktok.com/", "secure": True},
             "pinterest": {"category": "social", "type": "website", "url": "https://www.pinterest.com/", "secure": True},
-            "snapchat": {"category": "social", "type": "website", "url": "https://www.snapchat.com/", "secure": True},
+            "snapchat": {"category": "social", "type": "website", "url": "https://snapchat.com/", "secure": True},
             "github": {"category": "dev", "type": "website", "url": "https://github.com/", "secure": True},
             "gitlab": {"category": "dev", "type": "website", "url": "https://gitlab.com/", "secure": True},
             "stackoverflow": {"category": "dev", "type": "website", "url": "https://stackoverflow.com/", "secure": True},
@@ -58,7 +58,6 @@ class EnterpriseAutomationEngine:
         self.execution_audit_trail.append(formatted_entry)
 
     def analyze_security_log(self, log_entry):
-        """Basic module to analyze a security log entry."""
         self.log_event("INFO", "Analyzing security log...")
         if "failed login" in log_entry.lower():
             self.log_event("WARNING", "Potential brute force attempt detected in logs!")
@@ -71,18 +70,6 @@ class EnterpriseAutomationEngine:
         normalized_name = name.lower()
         if normalized_name in self.global_platform_registry:
             webbrowser.open(self.global_platform_registry[normalized_name]["url"])
-
-    def open_ms_teams(self):
-        self.log_event("INFO", "Starting MS Teams")
-
-    def open_notepad(self):
-        self.log_event("INFO", "Opening Notepad")
-
-    def open_calculator(self):
-        self.log_event("INFO", "Opening Calculator")
-
-    def open_terminal(self):
-        self.log_event("INFO", "Opening Terminal")
 
     def adjust_volume(self, direction):
         self.log_event("INFO", f"Adjusting volume {direction}")
@@ -163,6 +150,16 @@ class EnterpriseAutomationEngine:
     def execute_call_subsystem(self, recipient_name, use_whatsapp_flag, state_modifier):
         if use_whatsapp_flag:
             webbrowser.open(self.global_platform_registry["whatsapp"]["url"])
+            self.log_event("INFO", f"Opening WhatsApp for recipient: {recipient_name}")
+            time.sleep(8)
+            try:
+                pyautogui.hotkey('ctrl', 'alt', '/')
+                time.sleep(1)
+                pyautogui.typewrite(recipient_name)
+                time.sleep(2)
+                pyautogui.press('enter')
+            except Exception as e:
+                self.log_event("ERROR", f"Automation error during WhatsApp call routing: {str(e)}")
 
     def execute_navigation_subsystem(self, target_query):
         query_sanitized = target_query.lower()
@@ -186,4 +183,4 @@ class EnterpriseAutomationEngine:
         self.log_event("INFO", f"Executing generic universal fallback handler for string: '{unparsed_text}'")
 
 if __name__ == "__main__":
-    automation_engine = EnterpriseAutomationEngine()
+    engine = EnterpriseAutomationEngine()
