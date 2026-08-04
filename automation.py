@@ -16,7 +16,7 @@ class EnterpriseAutomationEngine:
         self.execution_audit_trail = []
         self.security_logs = []
         self.global_platform_registry = {
-            "whatsapp": {"category": "communication", "type": "app", "url": "https://whatsapp.com", "secure": True},
+            "whatsapp": {"category": "communication", "type": "app", "url": "https://web.whatsapp.com", "secure": True},
             "telegram": {"category": "communication", "type": "app", "url": "https://telegram.org", "secure": True},
             "signal": {"category": "communication", "type": "app", "url": "https://signal.org", "secure": True},
             "discord": {"category": "communication", "type": "app", "url": "https://discord.com", "secure": True},
@@ -58,13 +58,29 @@ class EnterpriseAutomationEngine:
         print(formatted_entry)
         self.execution_audit_trail.append(formatted_entry)
 
-    def analyze_security_log(self, log_entry):
-        self.log_event("INFO", "Analyzing security log...")
-        if "failed login" in log_entry.lower():
-            self.log_event("WARNING", "Potential brute force attempt detected in logs!")
-            self.security_logs.append({"status": "DANGER", "details": log_entry})
+    # 1. FIXED INTERFACE METHOD FOR STREAMLIT (MAPS TO APP/SITE LOGIC)
+    def open_app_or_site(self, target):
+        normalized_name = target.lower().strip()
+        if normalized_name in self.global_platform_registry:
+            self.open_site(normalized_name)
+            return f"Successfully opened site: {target.title()}"
         else:
-            self.security_logs.append({"status": "SAFE", "details": log_entry})
+            # Fallback to general web search if target is not registered
+            search_url = f"https://google.com{target}"
+            webbrowser.open(search_url)
+            self.log_event("INFO", f"Searching Google for: {target}")
+            return f"Platform '{target}' not found in registry. Searching Google instead."
+
+    # 2. ADDED METHOD REQUIRED BY YOUR STREAMLIT APP BUTTONS
+    def whatsapp_action(self, contact, action_type="call"):
+        self.log_event("INFO", f"Initiating WhatsApp {action_type} to: {contact}")
+        
+        # Opens WhatsApp Web interface with search or action parameters
+        # Note: True automated deep linking requires phone numbers, this opens web interface as a base.
+        base_url = "https://whatsapp.com"
+        webbrowser.open(base_url)
+        
+        return f"WhatsApp Engine triggered for contact: '{contact.title()}' with action: '{action_type}'"
 
     def open_site(self, name):
         self.log_event("INFO", f"Opening site: {name}")
@@ -138,38 +154,3 @@ class EnterpriseAutomationEngine:
     def execute_call_subsystem(self, target, is_whatsapp, state):
         channel = "WhatsApp" if is_whatsapp else "Phone"
         self.log_event("INFO", f"Calling {target} via {channel} (State: {state})")
-
-    def execute_navigation_subsystem(self, target):
-        self.open_site(target)
-
-    def execute_diagnostic_subsystem(self):
-        self.log_event("STATUS", f"Engine running clear. Version: {self.version}")
-
-    def master_command_router(self, command_string):
-        parsed_data = self.advanced_natural_language_parser(command_string)
-        action = parsed_data["action"]
-        
-        try:
-            if action == "communication_call":
-                self.execute_call_subsystem(parsed_data["target"], parsed_data["is_whatsapp"], parsed_data["state"])
-            elif action == "navigation_launch":
-                # Fallback: Agar clean keywords ki wajah se platform ka naam clean ho gaya ho
-                actual_target = parsed_data["target"] if parsed_data["target"] else command_string
-                # Pure string se matching website check karna
-                for key in self.global_platform_registry.keys():
-                    if key in command_string.lower():
-                        actual_target = key
-                        break
-                self.execute_navigation_subsystem(actual_target)
-            elif action == "system_status":
-                self.execute_diagnostic_subsystem()
-            elif action == "volume_up":
-                self.adjust_volume("up")
-            elif action == "volume_down":
-                self.adjust_volume("down")
-            elif action == "take_screenshot":
-                self.take_screenshot()
-            elif action == "analyze_log":
-                self.analyze_security_log(command_string)
-            else:
-                self.log_event("WARNING", f"Unhandled action structure: {action}")
