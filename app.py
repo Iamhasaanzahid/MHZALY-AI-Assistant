@@ -2,7 +2,7 @@ import streamlit as st
 import time
 import os
 from google import genai
-from automation impor EnterpriseAutomationEngine
+from automation import EnterpriseAutomationEngine
 import voice_engine
 
 st.set_page_config(page_title="MHZALY AI - Next-Gen System", layout="wide", page_icon="🤖")
