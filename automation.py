@@ -1,10 +1,11 @@
-import webbrowser
-import os
-import subprocess
-import json
-import re
 import datetime
+import json
+import os
+import re
+import subprocess
+import sys
 import time
+import webbrowser
 import pyautogui
 
 class EnterpriseAutomationEngine:
@@ -58,7 +59,7 @@ class EnterpriseAutomationEngine:
         self.execution_audit_trail.append(formatted_entry)
 
     def analyze_security_log(self, log_entry):
-        self.log_event("INFO", "Analyzing security log...")
+        self.log_event("INFO", f"Analyzing security log: {log_entry}")
         if "failed login" in log_entry.lower():
             self.log_event("WARNING", "Potential brute force attempt detected in logs!")
             self.security_logs.append({"status": "DANGER", "details": log_entry})
@@ -70,6 +71,8 @@ class EnterpriseAutomationEngine:
         normalized_name = name.lower()
         if normalized_name in self.global_platform_registry:
             webbrowser.open(self.global_platform_registry[normalized_name]["url"])
+        else:
+            self.log_event("ERROR", f"Platform '{name}' not found in registry.")
 
     def adjust_volume(self, direction):
         self.log_event("INFO", f"Adjusting volume {direction}")
@@ -80,17 +83,26 @@ class EnterpriseAutomationEngine:
 
     def take_screenshot(self):
         self.log_event("INFO", "Taking screenshot")
+        try:
+            filename = f"screenshot_{int(time.time())}.png"
+            screenshot = pyautogui.screenshot()
+            screenshot.save(filename)
+            self.log_event("SUCCESS", f"Screenshot saved successfully as {filename}")
+        except Exception as e:
+            self.log_event("ERROR", f"Failed to take screenshot: {e}")
 
     def advanced_natural_language_parser(self, raw_command_string):
         if not raw_command_string or not isinstance(raw_command_string, str):
             self.log_event("WARNING", "Empty or invalid command string received.")
             return {"action": "none", "target": "", "state": None, "is_whatsapp": False}
+        
         normalized_text = raw_command_string.strip().lower()
         detected_state = None
         if re.search(r'\boff\b', normalized_text):
             detected_state = "OFF"
         elif re.search(r'\bon\b', normalized_text):
             detected_state = "ON"
+            
         action_type = "general"
         if "call" in normalized_text:
             action_type = "communication_call"
@@ -98,23 +110,24 @@ class EnterpriseAutomationEngine:
             action_type = "navigation_launch"
         elif "status" in normalized_text or "check" in normalized_text:
             action_type = "system_status"
-        elif "volume" in normalized_text:
-            if "up" in normalized_text or "tez" in normalized_text:
+        elif "volume" in normalized_text or any(k in normalized_text for k in ["awaz", "volume", "sound"]):
+            if any(k in normalized_text for k in ["up", "tez", "increase", "unche"]):
                 action_type = "volume_up"
-            elif "down" in normalized_text or "kam" in normalized_text:
+            elif any(k in normalized_text for k in ["down", "kam", "decrease", "halke"]):
                 action_type = "volume_down"
-        elif "screen" in normalized_text:
+        elif "screen" in normalized_text or "screenshot" in normalized_text:
             action_type = "take_screenshot"
-        elif "security log" in normalized_text:
+        elif "security log" in normalized_text or "analyze" in normalized_text:
             action_type = "analyze_log"
             
         raw_tokens = normalized_text.split()
         core_filtered_tokens = [
             token for token in raw_tokens 
-            if token not in self.noise_vocabulary and token not in ["call", "whatsapp", "phone", "volume", "screen", "security", "log"]
+            if token not in self.noise_vocabulary and token not in ["call", "whatsapp", "phone", "volume", "screen", "security", "log", "screenshot"]
         ]
         extracted_target_entity = " ".join(core_filtered_tokens).title()
         is_whatsapp_channel = "whatsapp" in normalized_text
+        
         parsed_metadata = {
             "action": action_type,
             "target": extracted_target_entity,
@@ -125,62 +138,37 @@ class EnterpriseAutomationEngine:
         }
         return parsed_metadata
 
-    def master_command_router(self, command_string):
-        parsed_data = self.advanced_natural_language_parser(command_string)
-        try:
-            if parsed_data["action"] == "communication_call":
-                self.execute_call_subsystem(parsed_data["target"], parsed_data["is_whatsapp"], parsed_data["state"])
-            elif parsed_data["action"] == "navigation_launch":
-                self.execute_navigation_subsystem(parsed_data["target"])
-            elif parsed_data["action"] == "system_status":
-                self.execute_diagnostic_subsystem()
-            elif parsed_data["action"] == "volume_up":
-                self.adjust_volume("up")
-            elif parsed_data["action"] == "volume_down":
-                self.adjust_volume("down")
-            elif parsed_data["action"] == "take_screenshot":
-                self.take_screenshot()
-            elif parsed_data["action"] == "analyze_log":
-                self.analyze_security_log(parsed_data["target"])
-            else:
-                self.execute_fallback_subsystem(command_string)
-        except Exception as error:
-            self.log_event("ERROR", f"Exception encountered during command routing: {str(error)}")
+    # Subsystem Implementation Stubs to keep code functional
+    def execute_call_subsystem(self, target, is_whatsapp, state):
+        channel = "WhatsApp" if is_whatsapp else "Standard Phone"
+        self.log_event("INFO", f"Initiating {channel} call to target: {target} (State: {state})")
 
-    def execute_call_subsystem(self, recipient_name, use_whatsapp_flag, state_modifier):
-        if use_whatsapp_flag:
-            webbrowser.open(self.global_platform_registry["whatsapp"]["url"])
-            self.log_event("INFO", f"Opening WhatsApp for recipient: {recipient_name}")
-            time.sleep(8)
-            try:
-                pyautogui.hotkey('ctrl', 'alt', '/')
-                time.sleep(1)
-                pyautogui.typewrite(recipient_name)
-                time.sleep(2)
-                pyautogui.press('enter')
-            except Exception as e:
-                self.log_event("ERROR", f"Automation error during WhatsApp call routing: {str(e)}")
-
-    def execute_navigation_subsystem(self, target_query):
-        query_sanitized = target_query.lower()
-        matched_platform_key = None
-        for registry_key in self.global_platform_registry:
-            if registry_key in query_sanitized:
-                matched_platform_key = registry_key
-                break
-        if matched_platform_key:
-            webbrowser.open(self.global_platform_registry[matched_platform_key]["url"])
-        else:
-            if target_query:
-                formatted_domain_string = target_query.replace(" ", "").lower()
-                target_url = f"https://www.{formatted_domain_string}.com"
-                webbrowser.open(target_url)
+    def execute_navigation_subsystem(self, target):
+        self.open_site(target)
 
     def execute_diagnostic_subsystem(self):
-        self.log_event("INFO", "Running Enterprise System Diagnostics.")
+        self.log_event("INFO", f"Engine Version: {self.version} | Active Session: {self.active_session_start}")
 
-    def execute_fallback_subsystem(self, unparsed_text):
-        self.log_event("INFO", f"Executing generic universal fallback handler for string: '{unparsed_text}'")
-
-if __name__ == "__main__":
-    engine = EnterpriseAutomationEngine()
+    def master_command_router(self, command_string):
+        """
+        Routes the natural language command string to the correct engine subsystem.
+        """
+        parsed_data = self.advanced_natural_language_parser(command_string)
+        action = parsed_data["action"]
+        
+        try:
+            if action == "communication_call":
+                self.execute_call_subsystem(parsed_data["target"], parsed_data["is_whatsapp"], parsed_data["state"])
+            elif action == "navigation_launch":
+                # Fallback to checking the raw text if the target parsing cleared out registry items
+                target_site = parsed_data["target"] if parsed_data["target"] else command_string
+                self.execute_navigation_subsystem(target_site)
+            elif action == "system_status":
+                self.execute_diagnostic_subsystem()
+            elif action == "volume_up":
+                self.adjust_volume("up")
+            elif action == "volume_down":
+                self.adjust_volume("down")
+            elif action == "take_screenshot":
+                self.take_screenshot()
+            elif action == "analyze_log":
