@@ -171,4 +171,8 @@ class EnterpriseAutomationEngine:
                 self.adjust_volume("down")
             elif action == "take_screenshot":
                 self.take_screenshot()
-            elif action == "analyze_log":
+                        elif action == "analyze_log":
+                self.analyze_security_log(command_string)
+            else:
+                self.log_event("WARNING", f"Command router received an unhandled action: {action}")
+
