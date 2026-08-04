@@ -164,15 +164,15 @@ class EnterpriseAutomationEngine:
                 target_site = parsed_data["target"] if parsed_data["target"] else command_string
                 self.execute_navigation_subsystem(target_site)
             elif action == "system_status":
-                self.execute_diagnostic_subsystem()
-            elif action == "volume_up":
-                self.adjust_volume("up")
-            elif action == "volume_down":
-                self.adjust_volume("down")
-            elif action == "take_screenshot":
-                self.take_screenshot()
-                        elif action == "analyze_log":
-                self.analyze_security_log(command_string)
-            else:
-                self.log_event("WARNING", f"Command router received an unhandled action: {action}")
+              167             self.execute_diagnostic_subsystem()
+        elif action == "volume_up":
+            self.adjust_volume("up")
+        elif action == "volume_down":
+             self.adjust_volume("down")
+        elif action == "take_screenshot":
+            self.take_screenshot()
+        elif action == "analyze_log":
+            self.analyze_security_log(command_string)
+        else:
+        self.log_event("WARNING", f"Command router received an unhandled action: {action}")
 
