@@ -5,6 +5,9 @@ from google import genai
 from automation import EnterpriseAutomationEngine
 import voice_engine
 
+# 1. INITIALIZE THE AUTOMATION ENGINE HERE
+automation = EnterpriseAutomationEngine()
+
 st.set_page_config(page_title="MHZALY AI - Next-Gen System", layout="wide", page_icon="🤖")
 
 st.markdown("""
