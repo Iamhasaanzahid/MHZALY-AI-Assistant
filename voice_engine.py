@@ -1,52 +1,65 @@
 import asyncio
-import edge_tts
-import pygame
 import os
+import pygame
+import speech_recognition speech_recognition as sr
+from edge_tts import Communicate
 
-# Microsoft Neural Urdu Voices:
-# 1. "ur-PK-UzmaNeural" (Pakistani Female)
-# 2. "ur-PK-AsadNeural" (Pakistani Male)
-# 3. "ur-IN-GulNeural"  (Urdu Female)
-# 4. "ur-IN-SalmanNeural" (Urdu Male)
-
-SELECTED_VOICE = "ur-PK-UzmaNeural"  # Change to "ur-PK-AsadNeural" for Male voice
+LANGUAGE_VOICES = {
+    "ur": "ur-PK-UzmaNeural",
+    "en": "en-US-AndrewNeural",
+    "es": "es-ES-ElenaNeural",
+    "ar": "ar-SA-HamdanNeural",
+    "fr": "fr-FR-DeniseNeural",
+    "de": "de-DE-KatjaNeural",
+    "zh": "zh-CN-XiaoxiaoNeural"
+}
 
 def listen_user():
-    """Tries microphone input; falls back to console text input if PyAudio is missing"""
-    try:
-        import speech_recognition as sr
-        recognizer = sr.Recognizer()
-        with sr.Microphone() as source:
-            print("\n🎤 MHZALY Sun raha hai... (Speak Urdu/Hindi/English)")
-            recognizer.adjust_for_ambient_noise(source, duration=0.8)
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("\nListening for input...")
+        recognizer.adjust_for_ambient_noise(source, duration=0.8)
+        try:
             audio = recognizer.listen(source)
-            text = recognizer.recognize_google(audio, language="ur-PK")
-            print(f"👤 Aapne kaha: {text}")
+            text = recognizer.recognize_google(audio)
+            print(f"You said: {text}")
             return text
-    except Exception:
-        text = input("\n💬 MHZALY Command Type Karein (Urdu/Hindi/English): ")
-        return text
+        except sr.UnknownValueError:
+            print("Could not understand audio.")
+            return None
+        except sr.RequestError as e:
+            print(f"Speech recognition error: {e}")
+            return None
 
-async def _edge_tts_speak(text, voice):
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save("response.mp3")
-
-def speak_text(text, lang='ur', voice=SELECTED_VOICE):
-    """High-Quality Microsoft Neural Voice Output"""
-    print(f"🤖 MHZALY: {text}")
+async def edge_tts_speak(text, voice_name):
+    output_file = "response.mp3"
     try:
-        # Generate natural neural voice
-        asyncio.run(_edge_tts_speak(text, voice))
-        
-        # Play audio
+        communicate = Communicate(text, voice_name)
+        await communicate.save(output_file)
+
         pygame.mixer.init()
-        pygame.mixer.music.load("response.mp3")
+        pygame.mixer.music.load(output_file)
         pygame.mixer.music.play()
+
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)
+
+        pygame.mixer.music.unload()
         pygame.mixer.quit()
-        
-        if os.path.exists("response.mp3"):
-            os.remove("response.mp3")
+
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
     except Exception as e:
-        print(f"Speech output error: {e}")
+        print(f"TTS Error: {e}")
+
+def speak_text(text, lang_code="en"):
+    voice = LANGUAGE_VOICES.get(lang_code, "en-US-AndrewNeural")
+    print(f"MHZALY: {text}")
+    asyncio.run(edge_tts_speak(text, voice))
+
+if __name__ == "__main__":
+    while True:
+        user_input = listen_user()
+        if user_input:
+            speak_text(user_input, lang_code="en")
